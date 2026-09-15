@@ -4181,27 +4181,31 @@ function crearDibujoPDF(tipo) {
 
 
   if (
-    tipo === "puerta1"
-  ) {
+  tipo === "puerta1"
+) {
 
-    return `
+  return `
 
-      <div
-        class="pdf-panel completo pdf-puerta-una"
-      >
+    <div class="pdf-panel completo pdf-puerta-una">
 
-        <div
-          class="pdf-linea-puerta"
-        ></div>
+      <div class="pdf-puerta-hoja">
 
-        <span>◁</span>
+        <div class="pdf-puerta-vidrio">
+          <span class="pdf-apertura-puerta">◁</span>
+        </div>
+
+        <div class="pdf-puerta-travesano"></div>
+
+        <div class="pdf-puerta-panel-inferior"></div>
+
+        <div class="pdf-puerta-zocalo"></div>
 
       </div>
 
-    `;
+    </div>
 
-  }
-
+  `;
+}
 
   if (
     tipo === "puertaDoble"
@@ -4310,6 +4314,36 @@ function obtenerDatosCliente() {
 // ==========================================
 // GENERAR PDF / PRESUPUESTO IMPRIMIBLE
 // ==========================================
+
+// ==========================================
+// PROPORCIÓN REAL DEL DIBUJO EN EL PDF
+// ==========================================
+
+function obtenerEstiloProporcionPDF(anchoMm, altoMm) {
+
+  const A = Number(anchoMm);
+  const H = Number(altoMm);
+
+  if (A <= 0 || H <= 0) {
+    return "width:320px; height:210px;";
+  }
+
+  const maxAncho = 320;
+  const maxAlto = 260;
+
+  let anchoVisual = maxAncho;
+  let altoVisual = anchoVisual * (H / A);
+
+  if (altoVisual > maxAlto) {
+    altoVisual = maxAlto;
+    anchoVisual = altoVisual * (A / H);
+  }
+
+  return `
+    width:${anchoVisual.toFixed(1)}px;
+    height:${altoVisual.toFixed(1)}px;
+  `;
+}
 
 function generarPDF() {
 
@@ -4516,17 +4550,20 @@ function generarPDF() {
             >
 
 
-              <div
-                class="dibujo-pdf"
-              >
+             <div
+  class="dibujo-pdf"
+  style="${obtenerEstiloProporcionPDF(
+    abertura.ancho,
+    abertura.alto
+  )}"
+>
 
-                ${abertura.esAcoplado
-                  ? crearDibujoAcoplePDF(abertura)
-                  : crearDibujoPDF(abertura.tipoCodigo)
-                }
+  ${abertura.esAcoplado
+    ? crearDibujoAcoplePDF(abertura)
+    : crearDibujoPDF(abertura.tipoCodigo)
+  }
 
-              </div>
-
+</div>
 
               <div
                 class="medidas-pdf"
@@ -4770,15 +4807,14 @@ function generarPDF() {
 
 
         .dibujo-pdf {
-          width: 320px;
-          height: 210px;
-      
-              max-width: 100%;
+          max-width: 100%;
           border: 4px solid #333;
           display: flex;
           position: relative;
           overflow: hidden;
           background: white;
+          margin-left: auto;
+          margin-right: auto;
         }
 
 
@@ -4846,18 +4882,77 @@ function generarPDF() {
         }
 
 
-        .pdf-puerta-una {
-          position: relative;
-        }
+       .pdf-puerta-una {
+  position: relative;
+  padding: 6px;
+  box-sizing: border-box;
+  background: #f4f4f4;
+}
 
+/* HOJA INTERIOR */
+.pdf-puerta-hoja {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 4px solid #555;
+  box-sizing: border-box;
+  background: white;
+}
 
-        .pdf-linea-puerta {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 28%;
-          border-top: 3px solid #555;
-        }
+/* VIDRIO SUPERIOR */
+.pdf-puerta-vidrio {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 31%;
+  border: 2px solid #777;
+  box-sizing: border-box;
+  background: #eef7fa;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* INDICADOR DE APERTURA */
+.pdf-apertura-puerta {
+  font-size: 25px;
+  font-weight: normal;
+  color: #444;
+}
+
+/* TRAVESAÑO */
+.pdf-puerta-travesano {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 29%;
+  height: 7px;
+  background: #555;
+}
+
+/* PANEL INFERIOR */
+.pdf-puerta-panel-inferior {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 7px;
+  height: 24%;
+  border: 2px solid #777;
+  box-sizing: border-box;
+  background: #f5f5f5;
+}
+
+/* ZÓCALO INFERIOR */
+.pdf-puerta-zocalo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 8px;
+  background: #555;
+}
 
 
         .medidas-pdf {
